@@ -14,34 +14,6 @@
 <body>
 <div class="hint">Left drag: draw &nbsp;|&nbsp; Scroll: colour &nbsp;|&nbsp; Keys 1/2/3: pencil / pen / marker &nbsp;|&nbsp; Right: erase</div>
 <script>
-let ctrl;
-
-const BRUSH = {
-  pencil: { size: 3,  alpha: 0.90, cap: ROUND  },
-  pen:    { size: 7,  alpha: 0.75, cap: ROUND  },
-  marker: { size: 16, alpha: 0.45, cap: SQUARE }
-};
-
-function setup() {
-  createCanvas(800, 600);
-  colorMode(HSB, 360, 100, 100);
-  ctrl = new DrawController();
-  textFont("Calibri");
-}
-
-function draw()        { ctrl.render(); }
-function mousePressed() {
-  if (mouseButton === LEFT)  ctrl.startStroke(mouseX, mouseY);
-  if (mouseButton === RIGHT) ctrl.eraseClick(mouseX, mouseY);
-}
-function mouseDragged() {
-  if (mouseButton === RIGHT) ctrl.eraseDrag(mouseX, mouseY);
-  else ctrl.addPoint(mouseX, mouseY);
-}
-function mouseReleased() { ctrl.endStroke(); }
-function mouseWheel(e)   { ctrl.cycleColour(e.delta); return false; }
-function keyPressed()   { ctrl.switchTool(key); }
-
 class DrawController {
   constructor() {
     this.strokes = [];
@@ -124,7 +96,7 @@ class DrawController {
     stroke(s.hue, 80, 90, fade * 100 * b.alpha);
     strokeWeight(b.size);
     strokeJoin(ROUND);
-    strokeCap(b.cap);
+    strokeCap(b.cap === "square" ? SQUARE : ROUND);
     noFill();
     for (let i = 1; i < s.pts.length; i++) {
       const a = s.pts[i - 1], c = s.pts[i];
@@ -134,7 +106,7 @@ class DrawController {
     noStroke();
     fill(s.hue, 80, 90, fade * 100 * b.alpha);
     for (const p of s.pts) {
-      if (b.cap === SQUARE) { rectMode(CENTER); rect(p.x, p.y, b.size, b.size); }
+      if (b.cap === "square") { rectMode(CENTER); rect(p.x, p.y, b.size, b.size); }
       else circle(p.x, p.y, b.size);
     }
     pop();
@@ -162,6 +134,34 @@ class DrawController {
     pop();
   }
 }
+
+let ctrl;
+
+const BRUSH = {
+  pencil: { size: 3,  alpha: 0.90, cap: "round"  },
+  pen:    { size: 7,  alpha: 0.75, cap: "round"  },
+  marker: { size: 16, alpha: 0.45, cap: "square" }
+};
+
+function setup() {
+  createCanvas(800, 600);
+  colorMode(HSB, 360, 100, 100);
+  ctrl = new DrawController();
+  textFont("Calibri");
+}
+
+function draw()        { ctrl.render(); }
+function mousePressed() {
+  if (mouseButton === LEFT)  ctrl.startStroke(mouseX, mouseY);
+  if (mouseButton === RIGHT) ctrl.eraseClick(mouseX, mouseY);
+}
+function mouseDragged() {
+  if (mouseButton === RIGHT) ctrl.eraseDrag(mouseX, mouseY);
+  else ctrl.addPoint(mouseX, mouseY);
+}
+function mouseReleased() { ctrl.endStroke(); }
+function mouseWheel(e)   { ctrl.cycleColour(e.delta); return false; }
+function keyPressed()   { ctrl.switchTool(key); }
 </script>
 </body>
 </html>
